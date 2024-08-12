@@ -109,7 +109,7 @@ export const checkoutSessionCompleted = catchError(async (req, res, next) => {
   let checkoutCompleted;
   if (event.type === "checkout.session.completed") {
     checkoutCompleted = event.data.object;
-    let user = await User.findOne({ email: checkoutCompleted.email });
+    let user = await User.findOne({ email: checkoutCompleted.customer_email });
     let cart = await Cart.findById(checkoutCompleted.client_reference_id);
     if (!cart) return next(new AppError("Cart not found", 404));
 
