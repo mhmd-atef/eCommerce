@@ -13,7 +13,7 @@ const port = process.env.PORT || 3000;
 app.post('/api/webhook', express.raw({type: 'application/json'}), checkoutSessionCompleted)
 
 app.use(cors());
-
+    
 app.use(express.json());
 
 app.use("/uploads", express.static("uploads"));

@@ -114,7 +114,7 @@ export const checkoutSessionCompleted = catchError(async (req, res, next) => {
     if (!cart) return next(new AppError("Cart not found", 404));
 
     let order = new Order({
-      user: user.userId,
+      user: user._id,
       orderItems: cart.cartItems,
       shippingAddress: checkoutCompleted.metadata,
       totalOrderPrice: checkoutCompleted.amount_total / 100,
