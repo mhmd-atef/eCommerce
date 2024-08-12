@@ -16,6 +16,5 @@ export const categoryValidation=Joi.object(
             mimetype:Joi.string().valid('image/jpeg', 'image/png','image/gif', 'image/jpg').required(),
             size:Joi.number().max(1024 * 1024 * 7).required(),
         }),
-        // image: Joi.string().required()
     }
 )

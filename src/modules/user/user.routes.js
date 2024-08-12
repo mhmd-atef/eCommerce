@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { checkEmail } from "../../middleware/checkEmail.js";
-import { addUser, allUsers, deleteUser, getUser, updateUser } from "./user.controller.js";
 import orderRouter from "../order/order.routes.js";
+import { addUser, allUsers, deleteUser, getUser, updateUser } from "./user.controller.js";
 
 
 
