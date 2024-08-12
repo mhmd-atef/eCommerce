@@ -2,6 +2,7 @@ import Stripe from "stripe";
 import { Cart } from "../../../database/models/cart.models.js";
 import { Order } from "../../../database/models/order.models .js";
 import { Product } from "../../../database/models/product.models.js";
+import { User } from "../../../database/models/user.models.js";
 import { catchError } from "../../middleware/catchError.js";
 import { AppError } from "../../utils/appError.js";
 
@@ -98,3 +99,48 @@ export const checkoutSession = catchError(async (req, res, next) => {
   res.status(200).json({ message: "checkout session successfully", session });
 });
 
+export const checkoutSessionCompleted = catchError(async (req, res, next) => {
+  const endpointSecret = "whsec_kyIDiTPMQXxSvFOS9ixjyH7NsQuIW6uC";
+
+  const sig = req.headers["stripe-signature"].toString();
+
+  let event = stripe.webhooks.constructEvent(req.body, sig, endpointSecret);
+  // Handle the event
+  let checkoutCompleted;
+  if (event.type === "checkout.session.completed") {
+    checkoutCompleted = event.data.object;
+    let user = await User.findOne({ email: checkoutCompleted.email });
+    let cart = await Cart.findById(checkoutCompleted.client_reference_id);
+    if (!cart) return next(new AppError("Cart not found", 404));
+
+    let order = new Order({
+      user: user.userId,
+      orderItems: cart.cartItems,
+      shippingAddress: checkoutCompleted.metadata,
+      totalOrderPrice: checkoutCompleted.amount_total / 100,
+      paymentId: checkoutCompleted.payment_intent,
+      paymentStatus: checkoutCompleted.payment_status,
+      paymentType: "card",
+      isPaid: true,
+    });
+    await order.save();
+
+    //*4- increment sold & decrement stock
+    let options = cart.cartItems.map((prod) => {
+      return {
+        updateOne: {
+          filter: { _id: prod.product },
+          update: { $inc: { sold: prod.quantity, stock: -prod.quantity } },
+        },
+      };
+    });
+    await Product.bulkWrite(options);
+
+    //*5- clear user cart
+    await Cart.findByIdAndDelete(cart._id);
+  }
+
+  res
+    .status(200)
+    .json({ message: "checkout session successfully", checkoutCompleted });
+});

@@ -1,13 +1,16 @@
-import express from "express";
-import { dbConnection } from "./database/dbConnection.js";
-import { bootstrap } from "./src/modules/bootstrap.js";
-import { AppError } from "./src/utils/appError.js";
-import { globalError } from "./src/middleware/globalError.js";
 import cors from "cors";
 import "dotenv/config";
+import express from "express";
+import { dbConnection } from "./database/dbConnection.js";
+import { globalError } from "./src/middleware/globalError.js";
+import { bootstrap } from "./src/modules/bootstrap.js";
+import { checkoutSessionCompleted } from "./src/modules/order/order.controller.js";
+import { AppError } from "./src/utils/appError.js";
 
 const app = express();
 const port = process.env.PORT || 3000;
+
+app.post('/api/webhook', express.raw({type: 'application/json'}), checkoutSessionCompleted)
 
 app.use(cors());
 
