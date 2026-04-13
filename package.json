@@ -29,3 +29,12 @@
     "@types/multer": "^1.4.11"
   }
 }
+{
+  "builds": [
+    {
+      "src": "pom.xml",
+      "use": "@vercel/java"
+    }
+  ]
+}
+
